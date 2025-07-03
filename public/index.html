@@ -79,7 +79,6 @@
       letter-spacing: 0.8px;
     }
 
-    /* ปรับ canvas ให้เต็มความกว้าง container */
     canvas {
       width: 100% !important;
       height: 320px !important;
@@ -97,15 +96,15 @@
   <div class="readings">
     <div class="reading">
       <label>Heart Rate (bpm)</label>
-      <div id="hr" class="value">--</div>
+      <div id="hr" class="value"></div>
     </div>
     <div class="reading">
       <label>SpO₂ (%)</label>
-      <div id="spo2" class="value">--</div>
+      <div id="spo2" class="value"></div>
     </div>
   </div>
 
-  <div id="time">Updated: --</div>
+  <div id="time"></div>
 
   <canvas id="chart"></canvas>
 
@@ -117,7 +116,6 @@
 
     const ctx = document.getElementById('chart').getContext('2d');
 
-    // สร้าง gradient background สำหรับกราฟ
     const gradientHR = ctx.createLinearGradient(0, 0, 0, 320);
     gradientHR.addColorStop(0, 'rgba(112, 217, 112, 0.6)');
     gradientHR.addColorStop(1, 'rgba(112, 217, 112, 0.05)');
@@ -218,22 +216,25 @@
         const res = await fetch('/data');
         const data = await res.json();
 
-        document.getElementById('hr').textContent = data.heart_rate;
-        document.getElementById('spo2').textContent = data.spo2;
-        document.getElementById('time').textContent = 'Updated: ' + data.timestamp;
+        // แสดงตัวเลขเมื่อค่ามากกว่า 0 เท่านั้น
+        document.getElementById('hr').textContent = data.heart_rate > 0 ? data.heart_rate : '';
+        document.getElementById('spo2').textContent = data.spo2 > 0 ? data.spo2 : '';
+        document.getElementById('time').textContent = data.timestamp ? 'Updated: ' + data.timestamp : '';
 
-        const now = new Date().toLocaleTimeString();
-        labels.push(now);
-        heartData.push(data.heart_rate);
-        spo2Data.push(data.spo2);
+        if (data.heart_rate > 0 && data.spo2 > 0) {
+          const now = new Date().toLocaleTimeString();
+          labels.push(now);
+          heartData.push(data.heart_rate);
+          spo2Data.push(data.spo2);
 
-        if (labels.length > 30) {
-          labels.shift();
-          heartData.shift();
-          spo2Data.shift();
+          if (labels.length > 30) {
+            labels.shift();
+            heartData.shift();
+            spo2Data.shift();
+          }
+
+          chart.update();
         }
-
-        chart.update();
       } catch (e) {
         console.error('Error fetching data:', e);
       }
