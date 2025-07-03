@@ -8,14 +8,15 @@
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap');
 
     body {
-      margin: 0;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
       background: linear-gradient(135deg, #0a1a10, #153324);
       color: #a0f0b7;
       font-family: 'JetBrains Mono', monospace;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2rem 1rem;
       min-height: 100vh;
       user-select: none;
     }
@@ -35,15 +36,16 @@
       font-size: 1.6rem;
       justify-content: center;
       width: 100%;
-      max-width: 700px;
     }
 
     .reading {
+      min-width: 130px;
+      max-width: 180px;
+      width: auto;
       background: #224733;
-      padding: 1.2rem 2.5rem;
+      padding: 1.2rem 1.8rem;
       border-radius: 14px;
       box-shadow: 0 0 15px #56a656aa;
-      min-width: 150px;
       text-align: center;
       transition: box-shadow 0.3s ease;
     }
@@ -77,14 +79,15 @@
       letter-spacing: 0.8px;
     }
 
+    /* ปรับ canvas ให้เต็มความกว้าง container */
     canvas {
-      background-color: #1c3b20;
+      width: 100% !important;
+      height: 320px !important;
+      max-height: 320px;
+      max-width: 100%;
       border-radius: 20px;
       box-shadow: 0 0 30px #7ade7aaa;
-      max-width: 90vw;
-      max-height: 320px;
-      width: 650px;
-      height: 320px;
+      background-color: #1c3b20;
     }
   </style>
 </head>
