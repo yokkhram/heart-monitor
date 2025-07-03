@@ -3,11 +3,11 @@ const bodyParser = require("body-parser");
 const app = express();
 const PORT = 3000;
 
-// ข้อมูลล่าสุด เริ่มต้นเป็น 0 และ timestamp ว่าง
+// ข้อมูลล่าสุด
 let latestData = {
   heart_rate: 0,
   spo2: 0,
-  timestamp: ""
+  timestamp: new Date().toLocaleString()
 };
 
 // Middleware
@@ -17,22 +17,23 @@ app.use(express.static("public"));
 // รับข้อมูลจาก NodeMCU
 app.post("/upload.php", (req, res) => {
   const { heart_rate, spo2 } = req.body;
-  if (heart_rate && spo2) {
-    latestData = {
-      heart_rate: parseInt(heart_rate),
-      spo2: parseInt(spo2),
-      timestamp: new Date().toLocaleString()
-    };
+  if (heart_rate) {
+    latestData.heart_rate = parseInt(heart_rate);
+
+    if (spo2 !== undefined) {
+      // ตรวจสอบว่ามี spo2 และเป็นตัวเลข
+      const spo2Int = parseInt(spo2);
+      if (!isNaN(spo2Int)) {
+        latestData.spo2 = spo2Int;
+      }
+    }
+
+    latestData.timestamp = new Date().toLocaleString();
+
     console.log("Received:", latestData);
     res.send("Data received successfully");
   } else {
-    // ล้างข้อมูลถ้าไม่ได้รับค่า
-    latestData = {
-      heart_rate: 0,
-      spo2: 0,
-      timestamp: ""
-    };
-    res.status(400).send("Invalid data");
+    res.status(400).send("Invalid data: heart_rate required");
   }
 });
 
