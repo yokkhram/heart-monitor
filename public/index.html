@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Health Monitor</title>
+  <style>
+    body {
+      background-color: #f0fff4;
+      font-family: 'Segoe UI', sans-serif;
+      color: #2f855a;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #276749;
+    }
+    .reading {
+      font-size: 1.5em;
+      margin: 10px 0;
+    }
+    canvas {
+      margin-top: 30px;
+      max-width: 90%;
+    }
+  </style>
+</head>
+<body>
+  <h1>🫀 Real-Time Health Monitor</h1>
+  <div class="reading">Heart Rate: <span id="hr">--</span> bpm</div>
+  <div class="reading">SpO₂: <span id="spo2">--</span>%</div>
+  <div class="reading">Updated: <span id="time">--</span></div>
+
+  <canvas id="chart" width="400" height="200"></canvas>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const labels = [];
+    const heartData = [];
+
+    const chart = new Chart(document.getElementById("chart"), {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Heart Rate (bpm)",
+          borderColor: "#38a169",
+          data: heartData,
+          fill: false,
+          tension: 0.3
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: false },
+          x: { display: false }
+        }
+      }
+    });
+
+    async function fetchData() {
+      try {
+        const res = await fetch("/data");
+        const data = await res.json();
+
+        // อัปเดตตัวเลข
+        document.getElementById("hr").textContent = data.heart_rate;
+        document.getElementById("spo2").textContent = data.spo2;
+        document.getElementById("time").textContent = data.timestamp;
+
+        // อัปเดตกราฟ
+        const now = new Date().toLocaleTimeString();
+        labels.push(now);
+        heartData.push(data.heart_rate);
+
+        if (labels.length > 30) {
+          labels.shift();
+          heartData.shift();
+        }
+
+        chart.update();
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    }
+
+    // เรียกทุก 1 วินาที
+    setInterval(fetchData, 1000);
+    fetchData();
+  </script>
+</body>
+</html>
