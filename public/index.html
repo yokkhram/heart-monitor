@@ -2,89 +2,196 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Health Monitor</title>
   <style>
+    /* โทนสีเข้มและเขียวสดใสแบบ Replit */
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap');
+
     body {
-      background-color: #f0fff4;
-      font-family: 'Segoe UI', sans-serif;
-      color: #2f855a;
-      text-align: center;
-      padding: 20px;
+      margin: 0;
+      background-color: #0f111a;
+      color: #00ff90;
+      font-family: 'JetBrains Mono', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      min-height: 100vh;
     }
+
     h1 {
-      color: #276749;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #00ff90;
+      text-shadow: 0 0 6px #00ff90aa;
     }
+
+    .readings {
+      display: flex;
+      gap: 3rem;
+      margin-bottom: 2rem;
+      font-size: 1.6rem;
+    }
+
     .reading {
-      font-size: 1.5em;
-      margin: 10px 0;
+      background: #152934;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 8px #00ff90aa;
+      min-width: 140px;
+      text-align: center;
+      user-select: none;
     }
+
+    .reading label {
+      display: block;
+      font-size: 0.9rem;
+      opacity: 0.7;
+      margin-bottom: 0.3rem;
+      color: #00ff90cc;
+    }
+
+    .reading .value {
+      font-weight: 700;
+      font-size: 2rem;
+    }
+
+    #time {
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      opacity: 0.6;
+      color: #00ff90aa;
+      user-select: none;
+    }
+
     canvas {
-      margin-top: 30px;
-      max-width: 90%;
+      background-color: #152934;
+      border-radius: 16px;
+      box-shadow: 0 0 20px #00ff90bb;
+      max-width: 90vw;
+      max-height: 300px;
+      width: 600px;
+      height: 280px;
     }
   </style>
 </head>
 <body>
   <h1>🫀 Real-Time Health Monitor</h1>
-  <div class="reading">Heart Rate: <span id="hr">--</span> bpm</div>
-  <div class="reading">SpO₂: <span id="spo2">--</span>%</div>
-  <div class="reading">Updated: <span id="time">--</span></div>
 
-  <canvas id="chart" width="400" height="200"></canvas>
+  <div class="readings">
+    <div class="reading">
+      <label>Heart Rate (bpm)</label>
+      <div id="hr" class="value">--</div>
+    </div>
+    <div class="reading">
+      <label>SpO₂ (%)</label>
+      <div id="spo2" class="value">--</div>
+    </div>
+  </div>
+
+  <div id="time">Updated: --</div>
+
+  <canvas id="chart"></canvas>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const labels = [];
     const heartData = [];
+    const spo2Data = [];
 
-    const chart = new Chart(document.getElementById("chart"), {
-      type: "line",
+    const ctx = document.getElementById('chart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
       data: {
         labels: labels,
-        datasets: [{
-          label: "Heart Rate (bpm)",
-          borderColor: "#38a169",
-          data: heartData,
-          fill: false,
-          tension: 0.3
-        }]
+        datasets: [
+          {
+            label: 'Heart Rate (bpm)',
+            data: heartData,
+            borderColor: '#00ff90',
+            backgroundColor: 'rgba(0, 255, 144, 0.2)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 0,
+            borderWidth: 2,
+          },
+          {
+            label: 'SpO₂ (%)',
+            data: spo2Data,
+            borderColor: '#0099ff',
+            backgroundColor: 'rgba(0, 153, 255, 0.2)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 0,
+            borderWidth: 2,
+          }
+        ]
       },
       options: {
+        animation: false,
+        responsive: true,
+        maintainAspectRatio: false,
         scales: {
-          y: { beginAtZero: false },
-          x: { display: false }
+          y: {
+            suggestedMin: 50,
+            suggestedMax: 130,
+            grid: {
+              color: '#0a2a2f',
+            },
+            ticks: {
+              color: '#00ff90',
+              font: { family: "'JetBrains Mono', monospace" }
+            }
+          },
+          x: {
+            display: false,
+            grid: {
+              color: '#0a2a2f',
+            },
+            ticks: {
+              color: '#00ff90',
+              font: { family: "'JetBrains Mono', monospace" }
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: '#00ff90',
+              font: { family: "'JetBrains Mono', monospace" }
+            }
+          }
         }
       }
     });
 
     async function fetchData() {
       try {
-        const res = await fetch("/data");
+        const res = await fetch('/data');
         const data = await res.json();
 
-        // อัปเดตตัวเลข
-        document.getElementById("hr").textContent = data.heart_rate;
-        document.getElementById("spo2").textContent = data.spo2;
-        document.getElementById("time").textContent = data.timestamp;
+        document.getElementById('hr').textContent = data.heart_rate;
+        document.getElementById('spo2').textContent = data.spo2;
+        document.getElementById('time').textContent = 'Updated: ' + data.timestamp;
 
-        // อัปเดตกราฟ
         const now = new Date().toLocaleTimeString();
         labels.push(now);
         heartData.push(data.heart_rate);
+        spo2Data.push(data.spo2);
 
         if (labels.length > 30) {
           labels.shift();
           heartData.shift();
+          spo2Data.shift();
         }
 
         chart.update();
-      } catch (err) {
-        console.error("Error fetching data:", err);
+      } catch (e) {
+        console.error('Error fetching data:', e);
       }
     }
 
-    // เรียกทุก 1 วินาที
     setInterval(fetchData, 1000);
     fetchData();
   </script>
