@@ -216,7 +216,6 @@
         const res = await fetch('/data');
         const data = await res.json();
 
-        // แสดงตัวเลขเมื่อค่ามากกว่า 0 เท่านั้น
         document.getElementById('hr').textContent = data.heart_rate > 0 ? data.heart_rate : '';
         document.getElementById('spo2').textContent = data.spo2 > 0 ? data.spo2 : '';
         document.getElementById('time').textContent = data.timestamp ? 'Updated: ' + data.timestamp : '';
