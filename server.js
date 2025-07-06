@@ -1,53 +1,34 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 const app = express();
-const PORT = 3000;
 
-// ข้อมูลล่าสุด
-let latestData = {
-  heart_rate: 0,
-  spo2: 0,
-  timestamp: new Date().toLocaleString()
-};
+let heartRate = 0;
+let spo2 = 0;
 
-// Middleware
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static("public"));
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
-// รับข้อมูลจาก NodeMCU
-app.post("/upload.php", (req, res) => {
-  const { heart_rate, spo2 } = req.body;
-  if (heart_rate) {
-    latestData.heart_rate = parseInt(heart_rate);
-
-    if (spo2 !== undefined) {
-      // ตรวจสอบว่ามี spo2 และเป็นตัวเลข
-      const spo2Int = parseInt(spo2);
-      if (!isNaN(spo2Int)) {
-        latestData.spo2 = spo2Int;
-      }
-    }
-
-    latestData.timestamp = new Date().toLocaleString();
-
-    console.log("Received:", latestData);
-    res.send("Data received successfully");
-  } else {
-    res.status(400).send("Invalid data: heart_rate required");
-  }
+// รับค่าจาก ESP8266
+app.post("/upload", (req, res) => {
+  heartRate = parseInt(req.body.heart_rate) || 0;
+  spo2 = parseInt(req.body.spo2) || 0;
+  console.log("Received:", heartRate, spo2);
+  res.sendStatus(200);
 });
 
-// API สำหรับเว็บดึงข้อมูลไปแสดงผล
-app.get("/data", (req, res) => {
-  res.json(latestData);
-});
-
-// หน้าเว็บหลัก
+// หน้าเว็บ
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/public/index.html");
 });
 
-// Run Server
+// API ให้ client เอาค่าไปแสดงแบบเรียลไทม์
+app.get("/data", (req, res) => {
+  res.json({ heart_rate: heartRate, spo2: spo2 });
+});
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log("Server running on port", PORT);
 });
