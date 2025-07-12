@@ -1,34 +1,31 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const app = express();
+const port = process.env.PORT || 3000;
 
-let heartRate = 0;
-let spo2 = 0;
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(cors());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+let latestData = { bpm: 0, spo2: 0 };
 
 // รับค่าจาก ESP8266
-app.post("/upload", (req, res) => {
-  heartRate = parseInt(req.body.heart_rate) || 0;
-  spo2 = parseInt(req.body.spo2) || 0;
-  console.log("Received:", heartRate, spo2);
-  res.sendStatus(200);
+app.post('/upload', (req, res) => {
+  const { bpm, spo2 } = req.body;
+  if (typeof bpm === 'number' && typeof spo2 === 'number') {
+    latestData = { bpm, spo2 };
+    fs.writeFileSync('data.json', JSON.stringify(latestData));
+    res.sendStatus(200);
+  } else {
+    res.status(400).send('Invalid data');
+  }
 });
 
-// หน้าเว็บ
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/index.html");
+// ให้เว็บดึงค่าล่าสุด
+app.get('/data', (req, res) => {
+  res.json(latestData);
 });
 
-// API ให้ client เอาค่าไปแสดงแบบเรียลไทม์
-app.get("/data", (req, res) => {
-  res.json({ heart_rate: heartRate, spo2: spo2 });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log("Server running on port", PORT);
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
 });
