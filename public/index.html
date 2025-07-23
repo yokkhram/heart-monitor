@@ -98,10 +98,7 @@
       <label>Heart Rate (bpm)</label>
       <div id="hr" class="value"></div>
     </div>
-    <div class="reading">
-      <label>SpO₂ (%)</label>
-      <div id="spo2" class="value"></div>
-    </div>
+    <!-- เอา SpO2 ออก -->
   </div>
 
   <div id="time"></div>
@@ -112,17 +109,13 @@
   <script>
     const labels = [];
     const heartData = [];
-    const spo2Data = [];
+    // ลบ spo2Data ทิ้ง เพราะไม่ใช้แล้ว
 
     const ctx = document.getElementById('chart').getContext('2d');
 
     const gradientHR = ctx.createLinearGradient(0, 0, 0, 320);
     gradientHR.addColorStop(0, 'rgba(112, 217, 112, 0.6)');
     gradientHR.addColorStop(1, 'rgba(112, 217, 112, 0.05)');
-
-    const gradientSpO2 = ctx.createLinearGradient(0, 0, 0, 320);
-    gradientSpO2.addColorStop(0, 'rgba(0, 153, 255, 0.6)');
-    gradientSpO2.addColorStop(1, 'rgba(0, 153, 255, 0.05)');
 
     const chart = new Chart(ctx, {
       type: 'line',
@@ -134,19 +127,6 @@
             data: heartData,
             borderColor: '#70d970',
             backgroundColor: gradientHR,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 4,
-            pointHoverRadius: 7,
-            borderWidth: 3,
-            hoverBorderWidth: 4,
-            cubicInterpolationMode: 'monotone',
-          },
-          {
-            label: 'SpO₂ (%)',
-            data: spo2Data,
-            borderColor: '#0099ff',
-            backgroundColor: gradientSpO2,
             fill: true,
             tension: 0.4,
             pointRadius: 4,
@@ -217,19 +197,17 @@
         const data = await res.json();
 
         document.getElementById('hr').textContent = data.heart_rate > 0 ? data.heart_rate : '';
-        document.getElementById('spo2').textContent = data.spo2 > 0 ? data.spo2 : '';
+        // เอา spo2 ออก ไม่แสดงและไม่เก็บค่า
         document.getElementById('time').textContent = data.timestamp ? 'Updated: ' + data.timestamp : '';
 
-        if (data.heart_rate > 0 && data.spo2 > 0) {
+        if (data.heart_rate > 0) {
           const now = new Date().toLocaleTimeString();
           labels.push(now);
           heartData.push(data.heart_rate);
-          spo2Data.push(data.spo2);
 
           if (labels.length > 30) {
             labels.shift();
             heartData.shift();
-            spo2Data.shift();
           }
 
           chart.update();
