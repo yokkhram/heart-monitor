@@ -98,7 +98,6 @@
       <label>Heart Rate (bpm)</label>
       <div id="hr" class="value"></div>
     </div>
-    <!-- เอา SpO2 ออก -->
   </div>
 
   <div id="time"></div>
@@ -109,7 +108,6 @@
   <script>
     const labels = [];
     const heartData = [];
-    // ลบ spo2Data ทิ้ง เพราะไม่ใช้แล้ว
 
     const ctx = document.getElementById('chart').getContext('2d');
 
@@ -129,10 +127,10 @@
             backgroundColor: gradientHR,
             fill: true,
             tension: 0.4,
-            pointRadius: 4,
-            pointHoverRadius: 7,
-            borderWidth: 3,
-            hoverBorderWidth: 4,
+            pointRadius: 2,
+            pointHoverRadius: 4,
+            borderWidth: 2,
+            hoverBorderWidth: 3,
             cubicInterpolationMode: 'monotone',
           }
         ]
@@ -197,7 +195,6 @@
         const data = await res.json();
 
         document.getElementById('hr').textContent = data.heart_rate > 0 ? data.heart_rate : '';
-        // เอา spo2 ออก ไม่แสดงและไม่เก็บค่า
         document.getElementById('time').textContent = data.timestamp ? 'Updated: ' + data.timestamp : '';
 
         if (data.heart_rate > 0) {
@@ -205,7 +202,7 @@
           labels.push(now);
           heartData.push(data.heart_rate);
 
-          if (labels.length > 30) {
+          if (labels.length > 15) {
             labels.shift();
             heartData.shift();
           }
@@ -217,7 +214,7 @@
       }
     }
 
-    setInterval(fetchData, 1000);
+    setInterval(fetchData, 3000); // เรียกทุก 3 วิ
     fetchData();
   </script>
 </body>
