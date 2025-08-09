@@ -1,12 +1,119 @@
-<script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Health Monitor</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap');
+
+    body {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      background: linear-gradient(135deg, #0a1a10, #153324);
+      color: #a0f0b7;
+      font-family: 'JetBrains Mono', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      user-select: none;
+    }
+
+    h1 {
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #70d970;
+      text-shadow: 0 0 8px #70d970aa;
+      letter-spacing: 1.2px;
+    }
+
+    .readings {
+      display: flex;
+      gap: 3rem;
+      margin-bottom: 2rem;
+      font-size: 1.6rem;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .reading {
+      min-width: 130px;
+      max-width: 180px;
+      width: auto;
+      background: #224733;
+      padding: 1.2rem 1.8rem;
+      border-radius: 14px;
+      box-shadow: 0 0 15px #56a656aa;
+      text-align: center;
+      transition: box-shadow 0.3s ease;
+    }
+    .reading:hover {
+      box-shadow: 0 0 25px #a5dba5cc;
+    }
+
+    .reading label {
+      display: block;
+      font-size: 0.95rem;
+      opacity: 0.85;
+      margin-bottom: 0.35rem;
+      color: #90f090cc;
+      letter-spacing: 0.8px;
+    }
+
+    .reading .value {
+      font-weight: 700;
+      font-size: 2.3rem;
+      color: #c7f0b5;
+      text-shadow: 0 0 5px #a6f3a0cc;
+    }
+
+    #time {
+      margin-top: 0.3rem;
+      font-size: 1rem;
+      opacity: 0.7;
+      color: #90f090bb;
+      user-select: none;
+      font-style: italic;
+      letter-spacing: 0.8px;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 320px !important;
+      max-height: 320px;
+      max-width: 100%;
+      border-radius: 20px;
+      box-shadow: 0 0 30px #7ade7aaa;
+      background-color: #1c3b20;
+    }
+  </style>
+</head>
+<body>
+  <h1>🫀 Real-Time Health Monitor</h1>
+
+  <div class="readings">
+    <div class="reading">
+      <label>Heart Rate (bpm)</label>
+      <div id="hr" class="value"></div>
+    </div>
+  </div>
+
+  <div id="time"></div>
+
+  <canvas id="chart"></canvas>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
     const labels = [];
-    const waveData = [];
+    const heartData = [];
 
     const ctx = document.getElementById('chart').getContext('2d');
 
-    const gradientWave = ctx.createLinearGradient(0, 0, 0, 320);
-    gradientWave.addColorStop(0, 'rgba(112, 217, 112, 0.8)');
-    gradientWave.addColorStop(1, 'rgba(112, 217, 112, 0.05)');
+    const gradientHR = ctx.createLinearGradient(0, 0, 0, 320);
+    gradientHR.addColorStop(0, 'rgba(112, 217, 112, 0.6)');
+    gradientHR.addColorStop(1, 'rgba(112, 217, 112, 0.05)');
 
     const chart = new Chart(ctx, {
       type: 'line',
@@ -14,29 +121,70 @@
         labels: labels,
         datasets: [
           {
-            label: 'IR Waveform',
-            data: waveData,
+            label: 'Heart Rate (bpm)',
+            data: heartData,
             borderColor: '#70d970',
-            backgroundColor: gradientWave,
+            backgroundColor: gradientHR,
             fill: true,
-            tension: 0.3,
-            pointRadius: 0,
+            tension: 0.4,
+            pointRadius: 2,
+            pointHoverRadius: 4,
             borderWidth: 2,
+            hoverBorderWidth: 3,
             cubicInterpolationMode: 'monotone',
           }
         ]
       },
       options: {
-        animation: false, // ปิด animation เพื่อให้เร็ว
+        animation: { duration: 500 },
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        interaction: {
+          mode: 'nearest',
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: '#a0f0b7',
+              font: { family: "'JetBrains Mono', monospace", size: 14 }
+            }
+          },
+          tooltip: {
+            enabled: true,
+            backgroundColor: '#224733',
+            titleFont: { family: "'JetBrains Mono', monospace", size: 14 },
+            bodyFont: { family: "'JetBrains Mono', monospace", size: 12 },
+            cornerRadius: 8,
+            padding: 10,
+            displayColors: false,
+            callbacks: {
+              label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}`
+            }
+          }
+        },
         scales: {
           y: {
-            grid: { color: '#224733' },
-            ticks: { color: '#a0f0b7' }
+            suggestedMin: 30,
+            suggestedMax: 130,
+            grid: {
+              color: '#224733',
+            },
+            ticks: {
+              color: '#a0f0b7',
+              font: { family: "'JetBrains Mono', monospace", size: 12 }
+            }
           },
-          x: { display: false }
+          x: {
+            display: false,
+            grid: {
+              color: '#224733',
+            },
+            ticks: {
+              color: '#a0f0b7',
+              font: { family: "'JetBrains Mono', monospace", size: 12 }
+            }
+          }
         }
       }
     });
@@ -46,25 +194,28 @@
         const res = await fetch('/data');
         const data = await res.json();
 
-        // อัปเดต BPM
-        document.getElementById('hr').textContent = data.bpm > 0 ? data.bpm : '';
+        document.getElementById('hr').textContent = data.heart_rate > 0 ? data.heart_rate : '';
         document.getElementById('time').textContent = data.timestamp ? 'Updated: ' + data.timestamp : '';
 
-        // อัปเดต waveform
-        labels.push('');
-        waveData.push(data.wave);
+        if (data.heart_rate > 0) {
+          const now = new Date().toLocaleTimeString();
+          labels.push(now);
+          heartData.push(data.heart_rate);
 
-        if (labels.length > 100) { // เก็บจุดล่าสุด 100 จุด
-          labels.shift();
-          waveData.shift();
+          if (labels.length > 15) {
+            labels.shift();
+            heartData.shift();
+          }
+
+          chart.update();
         }
-
-        chart.update();
       } catch (e) {
         console.error('Error fetching data:', e);
       }
     }
 
-    setInterval(fetchData, 50); // อัปเดตทุก 50ms
+    setInterval(fetchData, 1000); // เรียกทุก 1 วิ
     fetchData();
-</script>
+  </script>
+</body>
+</html>
