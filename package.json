@@ -1,7 +1,7 @@
 {
   "name": "heart-monitor",
   "version": "1.0.0",
-  "description": "ESP8266 Heart Rate + SpO2 Monitor",
+  "description": "ESP8266 Heart Rate Monitor",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
