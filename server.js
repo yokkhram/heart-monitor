@@ -10,24 +10,23 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 let latestData = {
   heart_rate: 0,
-  wave: 0,
   timestamp: ''
 };
 
 app.post('/upload', (req, res) => {
-  const { bpm, wave } = req.body;
+  const { bpm } = req.body;
 
-  if (typeof bpm === 'number' && typeof wave === 'number') {
+  if (typeof bpm === 'number') {
     latestData = {
-      heart_rate: bpm > 20 ? bpm : 0,
-      wave: wave,
+      heart_rate: bpm,
       timestamp: new Date().toLocaleTimeString()
     };
 
     fs.writeFileSync('data.json', JSON.stringify(latestData, null, 2));
+
     res.sendStatus(200);
   } else {
-    res.status(400).send('Invalid data: bpm and wave are required.');
+    res.status(400).send('Invalid data: bpm is required.');
   }
 });
 
